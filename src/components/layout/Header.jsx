@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom"; 
 import { Menu, Search, ShoppingCart, X } from "lucide-react";
-// FIXED: Removed the unused Button import to stop the compilation error!
-
-// CONNECTED: Using your real global cart context instead of the mock data hook
+import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext"; 
 
-export default function Header() {
+// Change this line near the top:
+export default function Header({ searchQuery = "", setSearchQuery = () => {} }) {
   const location = useLocation();
   const pathname = location.pathname; 
 
-  // FIXED: Now reads live, real-time item updates right from your application state!
   const { cart } = useCart();
   const cartCount = cart?.reduce((total, item) => total + item.quantity, 0) || 0;
+  const { isLoggedIn, logout, userEmail } = useAuth();
   
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -137,8 +136,28 @@ export default function Header() {
               )}
             </Link>
 
-            <div className="hidden sm:flex items-center space-x-2">
-              {/* Cleaned up: Authentication buttons are completely gone */}
+            {/* FIXED: Dynamic Login / Logout actions are now injected into this container! */}
+            <div className="hidden sm:flex items-center space-x-4">
+              {isLoggedIn ? (
+                <>
+                  <span className="text-sm text-gray-600 font-medium">
+                    Hi, {userEmail?.split("@")[0]} {/* Trims email down to a clean username display */}
+                  </span>
+                  <button 
+                    onClick={logout} 
+                    className="text-xs bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm transition-colors"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <Link 
+                  to="/login" 
+                  className="text-sm font-semibold text-gray-700 hover:text-gray-900 px-3 py-1.5 rounded-full hover:bg-gray-100 transition-all"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -182,6 +201,19 @@ export default function Header() {
                   {label}
                 </Link>
               ))}
+              
+              {/* Optional Mobile Auth Link */}
+              <div className="pt-2 border-t border-gray-100">
+                {isLoggedIn ? (
+                  <button onClick={logout} className="w-full text-left text-sm text-red-500 font-medium py-2 px-3">
+                    Log Out ({userEmail})
+                  </button>
+                ) : (
+                  <Link to="/login" onClick={closeMobileMenu} className="block text-sm text-gray-700 font-medium py-2 px-3">
+                    Sign In
+                  </Link>
+                )}
+              </div>
             </div>
           </nav>
         )}
