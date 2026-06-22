@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import ProductList from "./components/home/ProductList";
 import LoginPage from "./components/auth/LoginPage"; 
-
-// IMPORT THE CART VIEW CONTAINER
 import CartPage from "./components/cart/CartPage"; 
+
+// 1. IMPORT YOUR EXISTING CONTACT VIEW HERE
+import ContactsPage from "./components/contact/contactspage"; 
 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -39,9 +40,10 @@ export default function App() {
                   } 
                 />
                 <Route path="/login" element={<LoginPage />} />
-                
-                {/* NEW CART ENTRY POINT */}
                 <Route path="/cart" element={<CartPage />} />
+
+                {/* 2. ADD THE ROUTE MATCHING YOUR HEADER LINK */}
+                <Route path="/contact" element={<ContactsPage />} />
               </Routes>
             </main>
           </div>
