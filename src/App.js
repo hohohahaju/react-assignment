@@ -10,7 +10,7 @@ import ContactsPage from "./components/contact/contactspage";
 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-
+import ProductDetailPage from "./components/home/ProductDetailPage";
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -41,7 +41,7 @@ export default function App() {
                 />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/cart" element={<CartPage />} />
-
+                <Route path="/product/:id" element={<ProductDetailPage />} />
                 {/* 2. ADD THE ROUTE MATCHING YOUR HEADER LINK */}
                 <Route path="/contact" element={<ContactsPage />} />
               </Routes>
