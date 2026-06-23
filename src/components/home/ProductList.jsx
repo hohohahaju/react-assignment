@@ -8,15 +8,16 @@ export default function ProductList({ searchQuery = "" }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("https://dummyjson.com/products/search?q=shoes")
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch products");
-        return response.json();
-      })
-      .then((data) => {
-        setProducts(data.products);
-        setLoading(false);
-      })
+   fetch("https://fakestoreapi.com/products")
+  .then((response) => {
+    if (!response.ok) throw new Error("Failed to fetch products");
+    return response.json();
+  })
+  .then((data) => {
+    // 2. This API returns the array directly, so no '.products' needed!
+    setProducts(data); 
+    setLoading(false);
+  })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
@@ -38,13 +39,13 @@ export default function ProductList({ searchQuery = "" }) {
           {filteredProducts.map((product) => (
             <ProductCard 
               key={product.id} 
-              product={{
-                id: product.id.toString(),
-                name: product.title, 
-                price: product.price,
-                image: product.thumbnail, 
-                description: product.description
-              }} 
+             product={{
+            id: product.id.toString(),
+            name: product.title, 
+            price: product.price,
+            image: product.image, // 👈 It uses 'image' instead of 'thumbnail'
+            description: product.description
+              }}
         />
           ))}
         </div>
