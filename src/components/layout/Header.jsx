@@ -1,222 +1,110 @@
-import { useCallback, useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom"; 
-import { Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
-import { useCart } from "../../context/CartContext"; 
 
-// Change this line near the top:
-export default function Header({ searchQuery = "", setSearchQuery = () => {} }) {
-  const location = useLocation();
-  const pathname = location.pathname; 
-
+export default function Header({ searchQuery, setSearchQuery }) {
   const { cart } = useCart();
-  const cartCount = cart?.reduce((total, item) => total + item.quantity, 0) || 0;
-  const { isLoggedIn, logout, userEmail } = useAuth();
-  
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const { isLoggedIn, userEmail, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // Total number of individual items in the cart (not unique products)
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [pathname]);
-
-  const toggleMobileMenu = useCallback(() => {
-    setIsMobileOpen((prev) => !prev);
-  }, []);
-
-  const closeMobileMenu = useCallback(() => {
-    setIsMobileOpen(false);
-  }, []);
-
-  const isActivePath = (path) => pathname === path;
-
-  const navItems = [{ to: "/contact", label: "Contact" }]; 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-lg"
-          : "bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm"
-      }`}
-    >
-      <div className="container mx-auto px-4 sm:px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-8 lg:space-x-12">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16 gap-4">
+
+          {/* Logo */}
+          <Link
+            to="/"
+            className="text-xl font-bold text-gray-900 whitespace-nowrap hover:text-blue-600 transition-colors"
+          >
+            👟 SneakerStore
+          </Link>
+
+          {/* Search bar */}
+          <div className="flex-1 max-w-md">
+            <input
+              type="text"
+              placeholder="Search sneakers..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
+
+          {/* Right side nav */}
+          <nav className="flex items-center gap-3">
+
+            {/* Contact link */}
             <Link
-              className="text-2xl tracking-tight text-gray-900 hover:text-gray-700 transition-colors"
-              to="/" 
-              aria-label="BloomShop Home"
+              to="/contact"
+              className="hidden sm:block text-sm text-gray-600 hover:text-gray-900 transition-colors"
             >
-              HEHE<span className="text-primary">JACKSON</span>
+              Contact
             </Link>
 
-            <nav
-              className="hidden md:flex items-center space-x-1"
-              role="navigation"
-              aria-label="Main navigation"
-            >
-              {navItems.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to} 
-                  className={`relative py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActivePath(to)
-                      ? "bg-orange-100 shadow-md"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                  aria-current={isActivePath(to) ? "page" : undefined}
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          <div className="hidden lg:flex flex-1 max-w-md mx-8">
-            <form className="relative w-full">
-              <input
-                type="search"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                aria-label="Search products"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </form>
-          </div>
-
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="lg:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 text-gray-700" />
-            </button>
-
-            <button
-              onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Toggle navigation menu"
-              aria-expanded={isMobileOpen}
-            >
-              {isMobileOpen ? (
-                <X className="h-6 w-6 text-gray-700" />
-              ) : (
-                <Menu className="h-6 w-6 text-gray-700" />
-              )}
-            </button>
-
+            {/* Cart button with badge */}
             <Link
-              to="/cart" 
-              className="relative p-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
-              aria-label={`Shopping cart with ${cartCount} items`}
+              to="/cart"
+              className="relative flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              aria-label={`Cart, ${cartItemCount} item${cartItemCount !== 1 ? "s" : ""}`}
             >
-              <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-gray-900 transition-colors" />
-              {cartCount > 0 && (
-                <span
-                  className="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1"
-                  aria-label={`${cartCount} items in cart`}
-                >
-                  {cartCount > 99 ? "99+" : cartCount}
+              {/* Cart icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.8}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6h11"
+                />
+              </svg>
+
+              <span className="hidden sm:inline">Cart</span>
+
+              {/* Badge — only shown when cart has items */}
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
+                  {cartItemCount > 99 ? "99+" : cartItemCount}
                 </span>
               )}
             </Link>
 
-            {/* FIXED: Dynamic Login / Logout actions are now injected into this container! */}
-            <div className="hidden sm:flex items-center space-x-4">
-              {isLoggedIn ? (
-                <>
-                  <span className="text-sm text-gray-600 font-medium">
-                    Hi, {userEmail?.split("@")[0]} {/* Trims email down to a clean username display */}
-                  </span>
-                  <button 
-                    onClick={logout} 
-                    className="text-xs bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm transition-colors"
-                  >
-                    Log Out
-                  </button>
-                </>
-              ) : (
-                <Link 
-                  to="/login" 
-                  className="text-sm font-semibold text-gray-700 hover:text-gray-900 px-3 py-1.5 rounded-full hover:bg-gray-100 transition-all"
+            {/* Auth — show user email + logout when logged in, sign in when not */}
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <span className="hidden md:block text-sm text-gray-500 truncate max-w-[140px]">
+                  {userEmail}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                 >
-                  Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {isSearchOpen && (
-          <div className="lg:hidden mt-4 animate-in slide-in-from-top duration-200">
-            <form className="relative">
-              <input
-                type="search"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                aria-label="Search products"
-                autoFocus
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            </form>
-          </div>
-        )}
-
-        {isMobileOpen && (
-          <nav
-            className="md:hidden mt-4 animate-in slide-in-from-top duration-200"
-            role="navigation"
-            aria-label="Mobile navigation"
-          >
-            <div className="flex flex-col space-y-3 pb-4 border-b border-gray-200">
-              {navItems.map(({ to, label }) => (
-                <Link
-                  key={to}
-                  to={to} 
-                  onClick={closeMobileMenu}
-                  className={`text-sm font-medium py-2 px-3 rounded-lg transition-all ${
-                    isActivePath(to)
-                      ? "bg-orange-100"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                  aria-current={isActivePath(to) ? "page" : undefined}
-                >
-                  {label}
-                </Link>
-              ))}
-              
-              {/* Optional Mobile Auth Link */}
-              <div className="pt-2 border-t border-gray-100">
-                {isLoggedIn ? (
-                  <button onClick={logout} className="w-full text-left text-sm text-red-500 font-medium py-2 px-3">
-                    Log Out ({userEmail})
-                  </button>
-                ) : (
-                  <Link to="/login" onClick={closeMobileMenu} className="block text-sm text-gray-700 font-medium py-2 px-3">
-                    Sign In
-                  </Link>
-                )}
+                  Sign out
+                </button>
               </div>
-            </div>
+            ) : (
+              <Link
+                to="/login"
+                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+              >
+                Sign in
+              </Link>
+            )}
           </nav>
-        )}
+        </div>
       </div>
     </header>
   );

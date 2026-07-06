@@ -2,15 +2,15 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import ProductList from "./components/home/ProductList";
-import LoginPage from "./components/auth/LoginPage"; 
-import CartPage from "./components/cart/CartPage"; 
-
-// 1. IMPORT YOUR EXISTING CONTACT VIEW HERE
-import ContactsPage from "./components/contact/contactspage"; 
+import LoginPage from "./components/auth/LoginPage";
+import CartPage from "./components/cart/CartPage";
+import ContactsPage from "./components/contact/contactspage";
+import ProductDetailPage from "./components/home/ProductDetailPage";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
-import ProductDetailPage from "./components/home/ProductDetailPage";
+
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -20,11 +20,12 @@ export default function App() {
         <Router>
           <div className="min-h-screen bg-gray-50">
             <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-            
+
             <main className="container mx-auto px-4 py-8">
               <Routes>
-                <Route 
-                  path="/" 
+                {/* Public routes — anyone can visit */}
+                <Route
+                  path="/"
                   element={
                     <>
                       <div className="text-center mb-8">
@@ -37,13 +38,28 @@ export default function App() {
                       </div>
                       <ProductList searchQuery={searchQuery} />
                     </>
-                  } 
+                  }
                 />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/product/:id" element={<ProductDetailPage />} />
-                {/* 2. ADD THE ROUTE MATCHING YOUR HEADER LINK */}
                 <Route path="/contact" element={<ContactsPage />} />
+
+                {/* Protected routes — login required */}
+                <Route
+                  path="/cart"
+                  element={
+                    <PrivateRoute>
+                      <CartPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/product/:id"
+                  element={
+                    <PrivateRoute>
+                      <ProductDetailPage />
+                    </PrivateRoute>
+                  }
+                />
               </Routes>
             </main>
           </div>
